@@ -9,39 +9,43 @@ import json
 app = Flask(__name__)
 
 @app.route('/motion_detected',methods = ['POST'])
-def motionDetected():    
-    now = datetime.now()
-    
-    if request.headers.getlist("X-Forwarded-For"):
-        camIP = request.headers.getlist("X-Forwarded-For")[0]        
-    else:
-        camIP = request.remote_addr    
-            
+def motionDetected():            
     try:
-        status = request.get_data().decode() #ON/OFF
-        camlist = json.loads(Common.getCamlist())        
-        camName = "<unknown location>";    
-        for cam in camlist:
-            if cam['localUrl'] == camIP:    
-                camName = cam['name'] 
-                break
-        Common.logMotion(now, camName, camIP, status)
+        status = request.get_data().decode()         
+        cam = getSenderCam(request)
+        Common.logMotion(cam, status)
         return Response("OK", status=200)
     except Exception as e:                
         Common.logError("MOTION DETECTION ERROR: ", e)
-        return Response("Error on motionDetected", status=200)    
+        return Response("Error on motionDetected", status=200)  
 
+def getSenderCam(request):
+    foundCam = None
+    if request.headers.getlist("X-Forwarded-For"):
+        camIP = request.headers.getlist("X-Forwarded-For")[0]        
+    else:
+        camIP = request.remote_addr 
+        
+    camlist = json.loads(Common.getCamlist())
+    for cam in camlist:
+            if cam['localUrl'] == camIP:
+                foundCam = cam
+                break;                
+    return foundCam
+    
 def sendPush(title, body):
-    try:        
+    try:
+        privatKey = Common.getVapidKeys()['privateKey']
         subs = Common.getSubscriptions()
-        response = None
+        response = None        
         if subs:      
             for s in subs:
                 response = webpush(
                     subscription_info=json.loads(s),
-                    data=json.dumps({"title": title, "body": body}),
-                    vapid_private_key="770ESMW3cuQh8kPoTPflJZlAiLLse_EMPXqzcDYnv_M"
-                )
+                    vapid_private_key=privatKey,
+                    data=json.dumps({"notification": {"title": title, "body": body}}),                    
+                    vapid_claims={"sub": "mailto:andrea.letizia@gmail.com"}
+                )                
         return response.ok
     except WebPushException as ex:
         Common.logError("PUSH NOTIFICATION ERROR: ", ex)
@@ -60,6 +64,8 @@ def sendPush(title, body):
 @app.route('/test',methods = ['GET'])
 def test():
     sendPush("Titolo nota", "Questa è una notifica")
+    #cam = json.loads(Common.getCamlist())[0]
+    #Common.logMotion(cam, "test motion")
     return Response("OK", status=200)
 
 if __name__ == '__main__':
