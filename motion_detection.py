@@ -14,6 +14,7 @@ def motionDetected():
         status = request.get_data().decode()         
         cam = getSenderCam(request)
         Common.logMotion(cam, status)
+        sendPush("Motion detected: " + cam['name'], status)
         return Response("OK", status=200)
     except Exception as e:                
         Common.logError("MOTION DETECTION ERROR: ", e)
@@ -38,12 +39,14 @@ def sendPush(title, body):
         privatKey = Common.getVapidKeys()['privateKey']
         subs = Common.getSubscriptions()
         response = None        
+        actions = [{"action": 'view', "title": 'View'}]
+        data = json.dumps({"notification": {"title": title, "body": body, "actions": actions}})
         if subs:      
             for s in subs:
                 response = webpush(
                     subscription_info=json.loads(s),
                     vapid_private_key=privatKey,
-                    data=json.dumps({"notification": {"title": title, "body": body}}),                    
+                    data=data,                    
                     vapid_claims={"sub": "mailto:andrea.letizia@gmail.com"}
                 )                
         return response.ok
@@ -64,8 +67,6 @@ def sendPush(title, body):
 @app.route('/test',methods = ['GET'])
 def test():
     sendPush("Titolo nota", "Questa è una notifica")
-    #cam = json.loads(Common.getCamlist())[0]
-    #Common.logMotion(cam, "test motion")
     return Response("OK", status=200)
 
 if __name__ == '__main__':
