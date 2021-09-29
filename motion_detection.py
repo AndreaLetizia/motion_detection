@@ -31,23 +31,22 @@ def getSenderCam(request):
     for cam in camlist:
             if cam['localUrl'] == camIP:
                 foundCam = cam
-                break;                
+                break;
     return foundCam
     
 def sendPush(title, body):
     try:
         privatKey = Common.getVapidKeys()['privateKey']
         subs = Common.getSubscriptions()
-        response = None        
-        actions = [{"action": 'view', "title": 'View'}]
-        data = json.dumps({"notification": {"title": title, "body": body, "actions": actions}})
-        if subs:      
+        response = None
+        data = json.dumps({"notification": {"title": title, "body": body}})
+        if subs:
             for s in subs:
                 response = webpush(
-                    subscription_info=json.loads(s),
-                    vapid_private_key=privatKey,
-                    data=data,                    
-                    vapid_claims={"sub": "mailto:andrea.letizia@gmail.com"}
+                    subscription_info=json.loads(s), 
+                    vapid_private_key=privatKey, data=data, 
+                    vapid_claims={"sub": 
+                    "mailto:andrea.letizia@gmail.com"}
                 )                
         return response.ok
     except WebPushException as ex:
