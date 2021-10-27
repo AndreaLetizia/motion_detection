@@ -2,9 +2,9 @@ from flask import Flask
 from flask import request
 from flask import Response
 from pywebpush import webpush, WebPushException
-from datetime import datetime
 from common import Common
 import json
+import random
 
 app = Flask(__name__)
 
@@ -66,7 +66,8 @@ def sendPush(title, body):
 @app.route('/test',methods = ['GET'])
 def test():
     #sendPush("Titolo nota", "Questa è una notifica")
-    cams = Common.getCamlist()
+    l = Common.getCamlist()
+    cams = json.dumps(random.sample(l, len(l)))
     return Response(cams, status=200)
 
 @app.route('/test_alexa',methods = ['GET'])
@@ -80,6 +81,11 @@ def testAlexa():
     except Exception as e:
         Common.logError("ALEXA TALK ERROR: ", e)
         return Response("{'error': 'Alexa communication failed: " + str(e) + "'}", status=200)
+        
+@app.route('/halloween',methods = ['GET'])
+def halloween():
+    Common.halloween()
+    return Response("Ok", status=200)
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5001)
