@@ -31,22 +31,22 @@ def getSenderCam(request):
     for cam in camlist:
             if cam['localUrl'] == camIP:
                 foundCam = cam
-                break;
+                break;                
     return foundCam
     
 def sendPush(title, body):
     try:
         privatKey = Common.getVapidKeys()['privateKey']
         subs = Common.getSubscriptions()
-        response = None
+        response = None        
         data = json.dumps({"notification": {"title": title, "body": body}})
-        if subs:
+        if subs:      
             for s in subs:
                 response = webpush(
-                    subscription_info=json.loads(s), 
-                    vapid_private_key=privatKey, data=data, 
-                    vapid_claims={"sub": 
-                    "mailto:andrea.letizia@gmail.com"}
+                    subscription_info=json.loads(s),
+                    vapid_private_key=privatKey,
+                    data=data,                    
+                    vapid_claims={"sub": "mailto:andrea.letizia@gmail.com"}
                 )                
         return response.ok
     except WebPushException as ex:
@@ -65,8 +65,21 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    sendPush("Titolo nota", "Questa è una notifica")
-    return Response("OK", status=200)
+    #sendPush("Titolo nota", "Questa è una notifica")
+    cams = Common.getCamlist()
+    return Response(cams, status=200)
 
+@app.route('/test_alexa',methods = ['GET'])
+def testAlexa():
+    try:
+        #subReq = request.get_data().decode()
+        device = "Sala"
+        text = "Questo è un testo di esempio"
+        Common.alexaTalk(device, text)
+        return Response("{'success': 'Alexa communication succeded'}", status=200)
+    except Exception as e:
+        Common.logError("ALEXA TALK ERROR: ", e)
+        return Response("{'error': 'Alexa communication failed: " + str(e) + "'}", status=200)
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5001)
