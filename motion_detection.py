@@ -69,22 +69,16 @@ def test():
     l = Common.getCamlist()
     cams = json.dumps(random.sample(l, len(l)))
     return Response(cams, status=200)
-
-@app.route('/test_alexa',methods = ['GET'])
-def testAlexa():
-    try:
-        #subReq = request.get_data().decode()
-        device = "Sala"
-        text = "Questo è un testo di esempio"
-        Common.alexaTalk(device, text)
-        return Response("{'success': 'Alexa communication succeded'}", status=200)
-    except Exception as e:
-        Common.logError("ALEXA TALK ERROR: ", e)
-        return Response("{'error': 'Alexa communication failed: " + str(e) + "'}", status=200)
         
 @app.route('/halloween',methods = ['GET'])
 def halloween():
+    Common.stopAlarm = False
     Common.halloween()
+    return Response("Ok", status=200)
+    
+@app.route('/stop_alarm',methods = ['GET'])
+def stopAlarm():
+    Common.stopAlarm = True    
     return Response("Ok", status=200)
     
 if __name__ == '__main__':
