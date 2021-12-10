@@ -13,9 +13,11 @@ def motionDetected():
     try:
         status = request.get_data().decode()         
         cam = getSenderCam(request)
-        Common.logMotion(cam, status)
-        sendPush("Motion detected: " + cam['name'], status)
-        return Response("OK", status=200)
+        #sendPush("Motion detected: " + cam['name'], status)
+        if Common.logMotion(cam, status):
+            return Response("OK", status=200)
+        else:
+            raise Exception('Cannot write to db')
     except Exception as e:                
         Common.logError("MOTION DETECTION ERROR: ", e)
         return Response("Error on motionDetected", status=200)  
