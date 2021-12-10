@@ -65,10 +65,25 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    #sendPush("Titolo nota", "Questa è una notifica")
-    l = Common.getCamlist()
-    cams = json.dumps(random.sample(l, len(l)))
-    return Response(cams, status=200)
+    #sendPush("Titolo nota", "Questa è una notifica")    
+    #return Response("Ok", status=200)
+    subs = Common.getSubscriptions()
+    return Response(json.dumps(subs), status=200)
+    
+@app.route('/volume4',methods = ['GET'])
+def volume4():
+    Common.alexaVolume('V4')
+    return Response("Ok", status=200)
+    
+@app.route('/volume6',methods = ['GET'])
+def volume6():
+    Common.alexaVolume('V6')
+    return Response("Ok", status=200)
+    
+@app.route('/volume10',methods = ['GET'])
+def volume10():
+    Common.alexaVolume('V10')
+    return Response("Ok", status=200)
         
 @app.route('/halloween',methods = ['GET'])
 def halloween():
