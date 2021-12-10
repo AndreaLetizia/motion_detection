@@ -42,8 +42,9 @@ def sendPush(title, body):
         data = json.dumps({"notification": {"title": title, "body": body}})
         if subs:      
             for s in subs:
+                s.pop("id", None)
                 response = webpush(
-                    subscription_info=json.loads(s),
+                    subscription_info=s,
                     vapid_private_key=privatKey,
                     data=data,                    
                     vapid_claims={"sub": "mailto:andrea.letizia@gmail.com"}
@@ -65,10 +66,10 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    #sendPush("Titolo nota", "Questa è una notifica")    
-    #return Response("Ok", status=200)
-    subs = Common.getSubscriptions()
-    return Response(json.dumps(subs), status=200)
+    sendPush("Titolo nota", "Questa è una notifica")    
+    return Response("Ok", status=200)
+    #subs = Common.getSubscriptions()
+    #return Response(json.dumps(subs), status=200)
     
 @app.route('/volume4',methods = ['GET'])
 def volume4():
