@@ -29,8 +29,7 @@ def getSenderCam(request):
     else:
         camIP = request.remote_addr 
         
-    camlist = json.loads(Common.getCamlist())
-    for cam in camlist:
+    for cam in Common.getCamlist():
             if cam['localUrl'] == camIP:
                 foundCam = cam
                 break;                
