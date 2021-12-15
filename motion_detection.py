@@ -13,7 +13,7 @@ def motionDetected():
     try:
         status = request.get_data().decode()         
         cam = getSenderCam(request)
-        #sendPush("Motion detected: " + cam['name'], status)
+        sendPush("Motion detected: " + cam['name'], status)
         if Common.logMotion(cam, status):
             return Response("OK", status=200)
         else:
