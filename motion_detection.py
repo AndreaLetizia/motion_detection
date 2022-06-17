@@ -13,7 +13,8 @@ def motionDetected():
     try:
         status = request.get_data().decode()         
         cam = getSenderCam(request)
-        sendPush("Motion detected: " + cam['name'], status)
+        #sendPush("Motion detected: " + cam['name'], status)
+        Common.sendMail('andrea.letizia@gmail.com', "Motion detected: " + cam['name'], status)
         if Common.logMotion(cam, status):
             return Response("OK", status=200)
         else:
@@ -67,8 +68,12 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    sendPush("Titolo nota", "Questa è una notifica")    
-    return Response("Ok", status=200)
+    #sendPush("Titolo nota", "Questa è una notifica")    
+    sendMail = Common.sendMail('andrea.letizia@gmail.com', "Subject", "messaggio di prova")
+    message = 'Email sent'
+    if not sendMail:
+        message = 'EMAIL NOT SENT'
+    return Response(message, status=200)
     #subs = Common.getSubscriptions()
     #return Response(json.dumps(subs), status=200)
     
