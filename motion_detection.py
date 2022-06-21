@@ -5,6 +5,7 @@ from pywebpush import webpush, WebPushException
 from common import Common
 import json
 import random
+import requests
 
 app = Flask(__name__)
 
@@ -13,8 +14,8 @@ def motionDetected():
     try:
         status = request.get_data().decode()         
         cam = getSenderCam(request)
-        #sendPush("Motion detected: " + cam['name'], status)
-        Common.sendMail('andrea.letizia@gmail.com', "Motion detected: " + cam['name'], status)
+        sendPush("Motion detected: " + cam['name'], status)
+        #Common.sendMail('andrea.letizia@gmail.com', "Motion detected: " + cam['name'], status)
         if Common.logMotion(cam, status):
             return Response("OK", status=200)
         else:
@@ -38,41 +39,40 @@ def getSenderCam(request):
     
 def sendPush(title, body):
     try:
-        privatKey = Common.getVapidKeys()['privateKey']
+        accessToken = Common.getOauth2AccessToken()        
         subs = Common.getSubscriptions()
         response = None        
-        data = json.dumps({"notification": {"title": title, "body": body}})
-        if subs:      
+        headers = {
+            'Content-Type': 'application/json; UTF-8',
+            'Authorization': 'Bearer ' + accessToken,
+          }
+        data = {
+            "message": {
+                "notification": 
+                    {
+                        "title": title, 
+                        "body": body
+                    }
+                }
+            }
+        if subs:
             for s in subs:
-                s.pop("id", None)
-                response = webpush(
-                    subscription_info=s,
-                    vapid_private_key=privatKey,
-                    data=data,                    
-                    vapid_claims={"sub": "mailto:andrea.letizia@gmail.com"}
-                )                
-        return response.ok
-    except WebPushException as ex:
-        Common.logError("PUSH NOTIFICATION ERROR: ", ex)
-        if ex.response and ex.response.json():
-            extra = ex.response.json()
-            print("Remote service replied with a {}:{}, {}",
-                  extra.code,
-                  extra.errno,
-                  extra.message
-                  )
-        return False
+                subId = s.pop("id", None)
+                data["message"]['token'] = s['device_token']
+                response = requests.post("https://fcm.googleapis.com/v1/projects/domotica-64f83/messages:send", headers = headers, data=json.dumps(data))                
+                Common.log("Push notification sent to subscription " + str(subId))           
+        return True 
     except Exception as e:     
         Common.logError("PUSH NOTIFICATION ERROR: ", e)
         return False
 
 @app.route('/test',methods = ['GET'])
 def test():
-    #sendPush("Titolo nota", "Questa è una notifica")    
-    sendMail = Common.sendMail('andrea.letizia@gmail.com', "Subject", "messaggio di prova")
-    message = 'Email sent'
-    if not sendMail:
-        message = 'EMAIL NOT SENT'
+    sendPush("Titolo nota", "Questa è una notifica")    
+    #sendMail = Common.sendMail('andrea.letizia@gmail.com', "Subject", "messaggio di prova")
+    message = 'Notification sent'
+    #if not sendMail:
+    #    message = 'EMAIL NOT SENT'
     return Response(message, status=200)
     #subs = Common.getSubscriptions()
     #return Response(json.dumps(subs), status=200)
