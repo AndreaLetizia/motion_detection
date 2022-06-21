@@ -60,7 +60,7 @@ def sendPush(title, body):
                 subId = s.pop("id", None)
                 data["message"]['token'] = s['device_token']
                 response = requests.post("https://fcm.googleapis.com/v1/projects/domotica-64f83/messages:send", headers = headers, data=json.dumps(data))                
-                Common.log("Push notification sent to subscription " + str(subId))           
+                Common.log(title + " sent to subscription " + str(subId))           
         return True 
     except Exception as e:     
         Common.logError("PUSH NOTIFICATION ERROR: ", e)
