@@ -55,7 +55,8 @@ def sendPush(title, body):
                     },
                 "webpush": 
                     {
-                        "fcm_options": { "link": "/#/panoramica;notification=true"}
+                        "fcm_options": { "link": "/#/panoramica;notification=true" },
+                        "headers": { "Urgency": "high" }
                     }
                 }
             }
