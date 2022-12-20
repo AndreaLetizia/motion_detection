@@ -10,7 +10,6 @@ from urllib.request import urlopen
 import time
 import sys
 
-
 app = Flask(__name__)
 
 @app.route('/motion_detected',methods = ['POST'])
@@ -79,7 +78,7 @@ def sendPush(title, body):
 @app.route('/test',methods = ['GET'])
 def test():
     cam = Common.getCamlist()[0]    
-    Common.recordVideo(cam, 300)
+    Common.recordVideo(cam, 30)
     return Response("OK", status=200)
     
 @app.route('/volume4',methods = ['GET'])
@@ -108,5 +107,5 @@ def stopAlarm():
     Common.stopAlarm = True    
     return Response("Ok", status=200)
     
-if __name__ == '__main__':
+if __name__ == '__main__':    
     app.run(host='0.0.0.0',port=5001)
