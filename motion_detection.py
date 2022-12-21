@@ -90,11 +90,17 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    #~ cam = Common.getCamlist()[0]    
-    #~ Common.recordVideo(cam, 30)
+    cam = Common.getCamlist()[0]        
     #Common.getCamlist()
-    sendPush("Motion detected: TEST", "solo un test")
-    return Response("OK", status=200)
+    Common.recordVideo(cam)
+    return Response(json.dumps(Common.getCamlist()), status=200)
+    
+@app.route('/test2',methods = ['GET'])
+def test2():
+    cam = Common.getCamlist()[0]        
+    #Common.getCamlist()
+    Common.stopRecording(cam['name'])
+    return Response(json.dumps(Common.getCamlist()), status=200)
     
 @app.route('/volume4',methods = ['GET'])
 def volume4():
