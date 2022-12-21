@@ -19,7 +19,7 @@ def motionDetected():
         cam = getSenderCam(request)
         sendPush("Motion detected: " + cam['name'], status)
         #Common.sendMail('andrea.letizia@gmail.com', "Motion detected: " + cam['name'], status)
-        Common.recordVideo(cam, 300)
+        Common.recordVideo(cam, 180)
         if Common.logMotion(cam, status):
             return Response("OK", status=200)
         else:
@@ -61,6 +61,14 @@ def sendPush(title, body):
                     {
                         "fcm_options": { "link": "/#/panoramica;notification=true" },
                         "headers": { "Urgency": "high" }
+                    },
+                "android": 
+                    {
+                        "priority": "high"
+                    },
+                "apns":
+                    {
+                        "headers": { "apns-priority":"10" }
                     }
                 }
             }
@@ -68,7 +76,12 @@ def sendPush(title, body):
             for s in subs:
                 subId = s.pop("id", None)
                 data["message"]['token'] = s['device_token']
-                response = requests.post("https://fcm.googleapis.com/v1/projects/domotica-64f83/messages:send", headers = headers, data=json.dumps(data))                
+                response = requests.post("https://fcm.googleapis.com/v1/projects/domotica-64f83/messages:send", headers = headers, data=json.dumps(data))
+                #~ print(response)
+                #~ print(response.content)  
+                if response.status_code == 404:
+                    #TODO: remove subscription from db
+                    Common.log("Subscription " + str(subId) + " not existing")                    
                 Common.log(title + " sent to subscription " + str(subId))           
         return True 
     except Exception as e:     
@@ -77,8 +90,10 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    cam = Common.getCamlist()[0]    
-    Common.recordVideo(cam, 30)
+    #~ cam = Common.getCamlist()[0]    
+    #~ Common.recordVideo(cam, 30)
+    #Common.getCamlist()
+    sendPush("Motion detected: TEST", "solo un test")
     return Response("OK", status=200)
     
 @app.route('/volume4',methods = ['GET'])
