@@ -90,17 +90,19 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    cam = Common.getCamlist()[0]        
-    #Common.getCamlist()
-    Common.recordVideo(cam)
-    return Response(json.dumps(Common.getCamlist()), status=200)
+    #~ cam = Common.getCamlist()[0]        
+    #~ #Common.getCamlist()
+    #~ Common.recordVideo(cam)
+    Common.addRecording('pippo')
+    return Response(json.dumps(Common.recordingCams()), status=200)
     
 @app.route('/test2',methods = ['GET'])
 def test2():
-    cam = Common.getCamlist()[0]        
-    #Common.getCamlist()
-    Common.stopRecording(cam['name'])
-    return Response(json.dumps(Common.getCamlist()), status=200)
+    #~ cam = Common.getCamlist()[0]        
+    #~ #Common.getCamlist()
+    #~ Common.stopRecording(cam['name'])
+    Common.deleteRecording('pippo')
+    return Response(json.dumps(Common.stopRecordingCams()), status=200)
     
 @app.route('/volume4',methods = ['GET'])
 def volume4():
