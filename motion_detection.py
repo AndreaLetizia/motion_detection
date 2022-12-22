@@ -2,7 +2,9 @@ from flask import Flask
 from flask import request
 from flask import Response
 from pywebpush import webpush, WebPushException
-from common import Common
+from commonpy.common import Common
+from commonpy.db import DB
+from commonpy.log import Log
 import json
 import random
 import requests
@@ -20,12 +22,12 @@ def motionDetected():
         sendPush("Motion detected: " + cam['name'], status)
         #Common.sendMail('andrea.letizia@gmail.com', "Motion detected: " + cam['name'], status)
         Common.recordVideo(cam, 180)
-        if Common.logMotion(cam, status):
+        if DB.logMotion(cam, status):
             return Response("OK", status=200)
         else:
             raise Exception('Cannot write to db')
     except Exception as e:                
-        Common.logError("MOTION DETECTION ERROR: ", e)
+        Log.logError("MOTION DETECTION ERROR: ", e)
         return Response("Error on motionDetected", status=200)  
 
 def getSenderCam(request):
@@ -35,7 +37,7 @@ def getSenderCam(request):
     else:
         camIP = request.remote_addr 
         
-    for cam in Common.getCamlist():
+    for cam in DB.getCamlist():
             if cam['localUrl'] == camIP:
                 foundCam = cam
                 break;                
@@ -44,7 +46,7 @@ def getSenderCam(request):
 def sendPush(title, body):
     try:
         accessToken = Common.getOauth2AccessToken()        
-        subs = Common.getSubscriptions()
+        subs = DB.getSubscriptions()
         response = None        
         headers = {
             'Content-Type': 'application/json; UTF-8',
@@ -81,27 +83,28 @@ def sendPush(title, body):
                 #~ print(response.content)  
                 if response.status_code == 404:
                     #TODO: remove subscription from db
-                    Common.log("Subscription " + str(subId) + " not existing")                    
-                Common.log(title + " sent to subscription " + str(subId))           
+                    Log.log("Subscription " + str(subId) + " not existing")                    
+                Log.log(title + " sent to subscription " + str(subId))           
         return True 
     except Exception as e:     
-        Common.logError("PUSH NOTIFICATION ERROR: ", e)
+        Log.logError("PUSH NOTIFICATION ERROR: ", e)
         return False 
 
 @app.route('/test',methods = ['GET'])
 def test():
-    cam = Common.getCamlist()[0]        
+    cam = DB.getCamlist()[0]        
     #~ #Common.getCamlist()
     Common.recordVideo(cam, 30)
     #~ Common.addRecording('pippo')
-    return Response(json.dumps(Common.recordingCams()), status=200)
+    return Response(json.dumps(DB.recordingCams()), status=200)
     
 @app.route('/test2',methods = ['GET'])
 def test2():
-    cam = Common.getCamlist()[0]        
+    cam = DB.getCamlist()[0]        
     #~ #Common.getCamlist()
-    Common.stopRecording(cam['name'])    
-    return Response(json.dumps(Common.recordingCams()), status=200)
+    print(cam['name'])
+    DB.stopRecording(cam['name'])    
+    return Response(json.dumps(DB.recordingCams()), status=200)
     
 @app.route('/volume4',methods = ['GET'])
 def volume4():
