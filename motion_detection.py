@@ -84,7 +84,8 @@ def sendPush(title, body):
                 if response.status_code == 404:                    
                     Log.log("Subscription " + str(subId) + " not existing, deleting it...")                    
                     DB.deleteSubscription(subId)
-                Log.log(title + " sent to subscription " + str(subId))           
+                else:
+                    Log.log(title + " sent to subscription " + str(subId))           
         return True 
     except Exception as e:     
         Log.logError("PUSH NOTIFICATION ERROR: ", e)
