@@ -81,9 +81,9 @@ def sendPush(title, body):
                 response = requests.post("https://fcm.googleapis.com/v1/projects/domotica-64f83/messages:send", headers = headers, data=json.dumps(data))
                 #~ print(response)
                 #~ print(response.content)  
-                if response.status_code == 404:
-                    #TODO: remove subscription from db
-                    Log.log("Subscription " + str(subId) + " not existing")                    
+                if response.status_code == 404:                    
+                    Log.log("Subscription " + str(subId) + " not existing, deleting it...")                    
+                    DB.deleteSubscription(subId)
                 Log.log(title + " sent to subscription " + str(subId))           
         return True 
     except Exception as e:     
