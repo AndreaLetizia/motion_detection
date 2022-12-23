@@ -92,10 +92,9 @@ def sendPush(title, body):
 
 @app.route('/test',methods = ['GET'])
 def test():
-    cam = DB.getCamlist()[0]        
-    #~ #Common.getCamlist()
-    Common.recordVideo(cam, 30)
-    #~ Common.addRecording('pippo')
+    #~ cam = DB.getCamlist()[0]            
+    #~ Common.recordVideo(cam, 30)
+    sendPush("Just a test notification", "Hello!")
     return Response(json.dumps(DB.recordingCams()), status=200)
     
 @app.route('/test2',methods = ['GET'])
